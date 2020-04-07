@@ -18,7 +18,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware'=>['auth:api'], 'namespace'=>'Api'], function () {
     Route::resource('roles', 'RoleController');//give default routes like roles.index, roles.store, roles.update, roles.delete etc
-    Route::get('/verify', 'UserController@verify');
+    Route::resource('users', 'UserController');//give default routes like roles.index, roles.store, roles.update, roles.delete etc
+    Route::get('verify', 'UserController@verify');
+
+    Route::post('roles/delete', 'RoleController@deleteAll');
+    Route::post('users/delete', 'UserController@deleteAll');
+
 });
 Route::post('login', 'Api\UserController@login')->name('login');
 

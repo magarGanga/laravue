@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Profile;
 use Illuminate\Http\Request;
-use App\Role;
 
-class RoleController extends Controller
+class ProfileController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index()
     {
-        $per_page = $request->per_page;
-        return response()->json(['roles' => Role::paginate($per_page)], 200);
+        //
     }
 
     /**
@@ -37,33 +36,27 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-       $role = Role::create([
-           'name' => $request->name,
-
-       ]);
-       return response()->json(['role' => $role], 200);
+        //
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Profile  $profile
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Profile $profile)
     {
-        $roles = Role::where('name', 'LIKE', "%$id%")->paginate();
-        return response()->json(['roles' => $roles], 200);
-
+        //
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Profile  $profile
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Profile $profile)
     {
         //
     }
@@ -72,32 +65,22 @@ class RoleController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Profile  $profile
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Profile $profile)
     {
-        $role = Role::find($id);
-        $role->name = $request->name;
-        $role->save();
-        return response()->json(['role' => $role], 200);
+        //
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Profile  $profile
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Profile $profile)
     {
-
-      $role = Role::find($id)->delete();
-      return response()->json(['role' => $role], 200);
-    }
-
-    public function deleteAll(Request $request){
-        Role::whereIn('id', $request->roles)->delete();
-        return response()->json(['Message', 'Records Deleted Successfully']);
+        //
     }
 }

@@ -4,6 +4,7 @@ import VueRouter from 'vue-router';
 import LoginComponent from './components/LoginComponent';
 import AdminComponent from './components/AdminComponent';
 import RolesComponent from './components/RolesComponent';
+import UserComponent from './components/UserComponent';
 
 
  Vue.use(VueRouter);
@@ -33,6 +34,11 @@ const routes = [
                 component: RolesComponent,
                 name: 'Roles'
             },
+            {
+                path: 'users',
+                component: UserComponent,
+                name: 'Users'
+            },
         ],
 
         //not needed here because globally guarded
@@ -42,6 +48,7 @@ const routes = [
             .catch( error => next('/login') )
           }
     },
+
 ]
 
 const router = new VueRouter({routes})

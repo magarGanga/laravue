@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Role;
+use App\Profile;
 
 class User extends Authenticatable
 {
@@ -36,4 +38,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    //one-to-one relationship
+    public function role(){
+        return $this->belongsTo(Role::class);
+    }
+
+    public function profile(){
+        return $this->hasOne(Profile::class)->withDefault();
+    }
+
+    public function isAdmin(){
+        return strtolower($this->role->name) === 'administrator';
+    }
 }

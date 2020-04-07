@@ -84,17 +84,17 @@ export default {
             {
                 icon: 'post-outline',
                 text: 'Posts',
-                action: '/admin/posts'
+                action: '#'
             },
             {
                 icon: 'circle-edit-outline',
                 text: 'Pages',
-                action: '/admin/pages'
+                action: '#'
             },
             {
                 icon: 'briefcase-edit-outline',
                 text: 'Categories',
-                action: '/admin/categories'
+                action: '#'
             },
             {
                 icon: 'account-badge-outline',
@@ -146,12 +146,13 @@ export default {
     methods: {
         logout: function () {
             localStorage.removeItem('token');
+            localStorage.removeItem('LoggedIn');
             this.$router.push('/login')
                 .then(res => {
                     this.text = "LoggedOut Successfully";
                     this.snackbar = true;
                 })
-                .catch(console.log(err))
+                .catch(err => console.log(err))
 
         }
     }

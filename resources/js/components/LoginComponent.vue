@@ -14,7 +14,7 @@
 
                             <v-progress-linear :active="loading" :indeterminate="loading" absolute top color="white accent-8"></v-progress-linear>
 
-                            <v-form ref="form" v-model="valid">
+                            <v-form ref="form" v-model="valid" method="post" v-on:submit.stop.prevent="login">
                                 <v-text-field color="error" label="Login" name="login" v-model="email" :rules="emailRules" prepend-icon="mdi-account-circle-outline" type="email" required />
 
                                 <v-text-field color="error" id="password" label="Password" name="password" v-model="password" prepend-icon="mdi-account-lock-outline" type="password" required />
@@ -97,7 +97,14 @@ export default {
                 .then(res => {
                     localStorage.setItem('token', res.data.token)
                     localStorage.setItem('LoggedIn', true)
-                    this.$router.push('/admin').then(res => console.log("LoggedIn Successfully")).catch(console.log(err))
+                    if(res.data.isAdmin){
+                            this.$router.push('/admin')
+                            .then(res =>  console.log('LoggedIn Successfully'))
+                            .catch(err => console.log(err))
+                    }else{
+                        this.text = "You need to be LoggedIn as an Administrator";
+                        this.snackbar = true;
+                    }
                 }).catch(err => {
                     this.text = err.response.data.status
                     this.snackbar = true;
