@@ -2194,6 +2194,7 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (err) {
         _this.text = err.response.data.status;
         _this.snackbar = true;
+        _this.text = "Email or Password Invalid";
       });
     }
   }
@@ -2627,6 +2628,49 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2635,7 +2679,13 @@ __webpack_require__.r(__webpack_exports__);
       loading: false,
       snackbar: false,
       selected: [],
+      success: '',
+      error: '',
       text: '',
+      options: {
+        sortBy: ['name'],
+        sortDesc: [true]
+      },
       headers: [{
         text: '#',
         align: 'start',
@@ -2667,8 +2717,8 @@ __webpack_require__.r(__webpack_exports__);
         value: 'created_at'
       }, {
         text: 'Actions',
-        value: 'actions',
-        sortable: false
+        sortable: false,
+        value: 'actions'
       }],
       users: [],
       roles: [],
@@ -2690,7 +2740,8 @@ __webpack_require__.r(__webpack_exports__);
         email: '',
         role: '',
         created_at: '',
-        updated_at: ''
+        updated_at: '',
+        photo: null
       },
       defaultItem: {
         id: '',
@@ -2722,6 +2773,54 @@ __webpack_require__.r(__webpack_exports__);
     this.initialize();
   },
   methods: {
+    uploadPhoto: function uploadPhoto(item) {
+      var _this = this;
+
+      if (this.editedItem.photo != null) {
+        var index = this.users.data.indexOf(item);
+        var formData = new FormData();
+        formData.append('photo', this.editedItem.photo, this.editedItem.photo.name);
+        formData.append('user', item.id);
+        axios.post('/api/user/photo', formData).then(function (res) {
+          _this.users.data[index].photo = res.data.user.photo;
+          _this.editedItem.photo = null;
+        })["catch"](function (err) {
+          return console.log(err.response);
+        });
+      }
+    },
+    updateRole: function updateRole(item) {
+      var _this2 = this;
+
+      var index = this.users.data.indexOf(item);
+      axios.post('api/user/role', {
+        'role': item.role,
+        'user': item.id
+      }).then(function (res) {
+        _this2.text = res.data.user.name + "'s Role Updated to " + res.data.user.role;
+        _this2.snackbar = true;
+      })["catch"](function (error) {
+        _this2.text = error.response.data.user.name + "'s Role cannot be Updated to " + error.response.data.user.role;
+        _this2.users.data[index].role = error.response.data.user.role;
+        _this2.snackbar = true;
+        console.dir(error.response);
+      });
+    },
+    checkEmail: function checkEmail() {
+      var _this3 = this;
+
+      if (/.+@.+\..+/.test(this.editedItem.email)) {
+        axios.post('/api/email/verify', {
+          'email': this.editedItem.email
+        }).then(function (res) {
+          _this3.success = res.data.message;
+          _this3.error = '';
+        })["catch"](function (err) {
+          _this3.success = '';
+          _this3.error = 'Email Already Exists';
+        });
+      }
+    },
     selectAll: function selectAll(e) {
       this.selected = [];
 
@@ -2732,7 +2831,7 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     deleteAll: function deleteAll() {
-      var _this = this;
+      var _this4 = this;
 
       var decide = confirm('Are you sure you want to delete this items?');
 
@@ -2740,79 +2839,94 @@ __webpack_require__.r(__webpack_exports__);
         axios.post('/api/users/delete', {
           'users': this.selected
         }).then(function (res) {
-          _this.text = "Records Deleted Successfully";
+          _this4.text = "Records Deleted Successfully";
 
-          _this.selected.map(function (val) {
-            var index = _this.users.data.indexOf(val);
+          _this4.selected.map(function (val) {
+            var index = _this4.users.data.indexOf(val);
 
-            _this.users.data.splice(index, 1);
+            _this4.users.data.splice(index, 1);
           });
 
-          _this.snackbar = true;
+          _this4.snackbar = true;
         })["catch"](function (err) {
           return console.log(err.response);
         });
       }
     },
+    // searchIt(e){
+    //    if(e.length > 3){
+    //        axios.get(`/api/users/${e}`)
+    //        .then(res => this.users = res.data.users)
+    //        .catch(err => console.dir(err.response))
+    //    }
+    //    if(e.length <= 0){
+    //         axios.get(`/api/users`)
+    //        .then(res => this.users = res.data.users)
+    //        .catch(err => console.dir(err.response) )
+    //    }
+    // },
     searchIt: function searchIt(e) {
-      var _this2 = this;
+      var _this5 = this;
 
       if (e.length > 3) {
-        axios.get("/api/users/".concat(e)).then(function (res) {
-          return _this2.users = res.data.users;
+        axios.get("/api/roles/".concat(e)).then(function (res) {
+          return _this5.roles = res.data.roles;
         })["catch"](function (err) {
           return console.dir(err.response);
         });
       }
 
       if (e.length <= 0) {
-        axios.get("/api/users").then(function (res) {
-          return _this2.users = res.data.users;
+        axios.get("/api/roles").then(function (res) {
+          return _this5.roles = res.data.roles;
         })["catch"](function (err) {
           return console.dir(err.response);
         });
       }
     },
     paginate: function paginate(e) {
-      var _this3 = this;
+      var _this6 = this;
 
+      var sortBy = this.options.sortBy.length == 0 ? "name" : this.options.sortBy[0];
+      var orderBy = this.options.sortDesc.length > 0 && this.options.sortDesc[0] ? "asc" : "desc";
       axios.get("/api/users?page=".concat(e.page), {
         params: {
-          'per_page': e.itemsPerPage
+          'per_page': e.itemsPerPage,
+          'sort_by': sortBy,
+          'order_by': orderBy
         }
       }).then(function (res) {
-        _this3.users = res.data.users;
-        _this3.roles = res.data.roles;
-        console.dir(res.data.users);
+        _this6.users = res.data.users;
+        _this6.roles = res.data.roles; //    console.dir(res.data.users)
       })["catch"](function (err) {
         //checking token, if not redirect to login form
         if (err.response.status == 401) localStorage.removeItem('token');
 
-        _this3.$router.push('/login');
+        _this6.$router.push('/login');
       });
     },
     initialize: function initialize() {
-      var _this4 = this;
+      var _this7 = this;
 
       // Add a request interceptor
       axios.interceptors.request.use(function (config) {
-        _this4.loading = true;
+        _this7.loading = true;
         return config;
       }, function (error) {
         // Do something with request error
-        _this4.loading = false;
+        _this7.loading = false;
         return Promise.reject(error);
       }); // Add a response interceptor
 
       axios.interceptors.response.use(function (response) {
         // Any status code that lie within the range of 2xx cause this function to trigger
         // Do something with response data
-        _this4.loading = false;
+        _this7.loading = false;
         return response;
       }, function (error) {
         // Any status codes that falls outside the range of 2xx cause this function to trigger
         // Do something with response error
-        _this4.loading = false;
+        _this7.loading = false;
         return Promise.reject(error);
       }); //get data from users database
       //edited for pagination
@@ -2823,58 +2937,56 @@ __webpack_require__.r(__webpack_exports__);
       this.dialog = true;
     },
     deleteItem: function deleteItem(item) {
-      var _this5 = this;
+      var _this8 = this;
 
       var index = this.users.data.indexOf(item);
       var decide = confirm('Are you sure you want to delete this item?');
 
       if (decide) {
         axios["delete"]('/api/users/' + item.id).then(function (res) {
-          _this5.text = "Record Deleted Successfully";
-          _this5.snackbar = true;
+          _this8.text = "Record Deleted Successfully";
+          _this8.snackbar = true;
 
-          _this5.users.data.splice(index, 1);
+          _this8.users.data.splice(index, 1);
         })["catch"](function (err) {
           return console.log(err.response);
         });
       }
     },
     close: function close() {
-      var _this6 = this;
+      var _this9 = this;
 
       this.dialog = false;
       setTimeout(function () {
-        _this6.editedItem = Object.assign({}, _this6.defaultItem);
-        _this6.editedIndex = -1;
+        _this9.editedItem = Object.assign({}, _this9.defaultItem);
+        _this9.editedIndex = -1;
       }, 300);
     },
     save: function save() {
-      var _this7 = this;
+      var _this10 = this;
 
       if (this.editedIndex > -1) {
-        axios.put('/api/users/' + this.editedItem.id, {
-          'name': this.editedItem.name
-        }).then(function (res) {
-          _this7.text = "Record Updated Successfully";
-          _this7.snackbar = true;
-          Object.assign(_this7.users.data[index], res.data.user);
+        var index = this.editedIndex;
+        axios.put('/api/users/' + this.editedItem.id, this.editedItem).then(function (res) {
+          _this10.text = "Record Updated Successfully";
+          _this10.snackbar = true;
+          Object.assign(_this10.users.data[index], res.data.user);
         })["catch"](function (err) {
           console.log(err.response);
-          _this7.text = "Error Updating Record";
-          _this7.snackbar = true;
+          _this10.text = "Error Updating Record";
+          _this10.snackbar = true;
         }); // Object.assign(this.users[this.editedIndex], this.editedItem)
       } else {
-        axios.post('/api/users', {
-          'name': this.editedItem.name
-        }).then(function (res) {
-          _this7.text = "Record Added Successfully";
-          _this7.snackbar = true;
+        console.log(this.editedItem);
+        axios.post('/api/users', this.editedItem).then(function (res) {
+          _this10.text = "Record Added Successfully";
+          _this10.snackbar = true;
 
-          _this7.users.data.push(res.data.user);
+          _this10.users.data.push(res.data.user);
         })["catch"](function (err) {
           console.dir(err.response);
-          _this7.text = "Error Insertings Record";
-          _this7.snackbar = true;
+          _this10.text = "Error Insertings Record";
+          _this10.snackbar = true;
         });
       }
 
@@ -21319,7 +21431,8 @@ var render = function() {
           "loading-text": "Loading... Please wait",
           headers: _vm.headers,
           "server-items-length": _vm.users.total,
-          items: _vm.users,
+          options: _vm.options,
+          items: _vm.users.data,
           "items-per-page": 5,
           "show-select": "",
           "footer-props": {
@@ -21329,7 +21442,13 @@ var render = function() {
             "show-first-last-page": true
           }
         },
-        on: { pagination: _vm.paginate, input: _vm.selectAll },
+        on: {
+          pagination: _vm.paginate,
+          "update:options": function($event) {
+            _vm.options = $event
+          },
+          input: _vm.selectAll
+        },
         scopedSlots: _vm._u([
           {
             key: "top",
@@ -21461,111 +21580,147 @@ var render = function() {
                                                 })
                                               ],
                                               1
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "v-col",
-                                              {
-                                                attrs: { cols: "12", sm: "12" }
-                                              },
-                                              [
-                                                _c("v-text-field", {
-                                                  attrs: {
-                                                    rules: [_vm.rules.required],
-                                                    type: "password",
-                                                    color: "error",
-                                                    label: "Type Password"
-                                                  },
-                                                  model: {
-                                                    value:
-                                                      _vm.editedItem.password,
-                                                    callback: function($$v) {
-                                                      _vm.$set(
-                                                        _vm.editedItem,
-                                                        "password",
-                                                        $$v
-                                                      )
-                                                    },
-                                                    expression:
-                                                      "editedItem.password"
-                                                  }
-                                                })
-                                              ],
-                                              1
-                                            ),
-                                            _vm._v(" "),
-                                            _c(
-                                              "v-col",
-                                              {
-                                                attrs: { cols: "12", sm: "12" }
-                                              },
-                                              [
-                                                _c("v-text-field", {
-                                                  attrs: {
-                                                    rules: [
-                                                      _vm.rules.required,
-                                                      _vm.passwordMatch
-                                                    ],
-                                                    type: "password",
-                                                    color: "error",
-                                                    label: "Retype Password"
-                                                  },
-                                                  model: {
-                                                    value:
-                                                      _vm.editedItem.rpassword,
-                                                    callback: function($$v) {
-                                                      _vm.$set(
-                                                        _vm.editedItem,
-                                                        "rpassword",
-                                                        $$v
-                                                      )
-                                                    },
-                                                    expression:
-                                                      "editedItem.rpassword"
-                                                  }
-                                                })
-                                              ],
-                                              1
                                             )
                                           ],
                                           1
                                         ),
                                         _vm._v(" "),
+                                        _vm.editedIndex === -1
+                                          ? _c(
+                                              "v-row",
+                                              [
+                                                _c(
+                                                  "v-col",
+                                                  {
+                                                    attrs: {
+                                                      cols: "12",
+                                                      sm: "12"
+                                                    }
+                                                  },
+                                                  [
+                                                    _c("v-text-field", {
+                                                      attrs: {
+                                                        rules: [
+                                                          _vm.rules.required
+                                                        ],
+                                                        type: "password",
+                                                        color: "error",
+                                                        label: "Type Password"
+                                                      },
+                                                      model: {
+                                                        value:
+                                                          _vm.editedItem
+                                                            .password,
+                                                        callback: function(
+                                                          $$v
+                                                        ) {
+                                                          _vm.$set(
+                                                            _vm.editedItem,
+                                                            "password",
+                                                            $$v
+                                                          )
+                                                        },
+                                                        expression:
+                                                          "editedItem.password"
+                                                      }
+                                                    })
+                                                  ],
+                                                  1
+                                                ),
+                                                _vm._v(" "),
+                                                _c(
+                                                  "v-col",
+                                                  {
+                                                    attrs: {
+                                                      cols: "12",
+                                                      sm: "12"
+                                                    }
+                                                  },
+                                                  [
+                                                    _c("v-text-field", {
+                                                      attrs: {
+                                                        rules: [
+                                                          _vm.rules.required,
+                                                          _vm.passwordMatch
+                                                        ],
+                                                        type: "password",
+                                                        color: "error",
+                                                        label: "Retype Password"
+                                                      },
+                                                      model: {
+                                                        value:
+                                                          _vm.editedItem
+                                                            .rpassword,
+                                                        callback: function(
+                                                          $$v
+                                                        ) {
+                                                          _vm.$set(
+                                                            _vm.editedItem,
+                                                            "rpassword",
+                                                            $$v
+                                                          )
+                                                        },
+                                                        expression:
+                                                          "editedItem.rpassword"
+                                                      }
+                                                    })
+                                                  ],
+                                                  1
+                                                ),
+                                                _vm._v(" "),
+                                                _c(
+                                                  "v-col",
+                                                  {
+                                                    attrs: {
+                                                      cols: "12",
+                                                      sm: "12"
+                                                    }
+                                                  },
+                                                  [
+                                                    _c("v-text-field", {
+                                                      attrs: {
+                                                        type: "email",
+                                                        "success-messages":
+                                                          _vm.success,
+                                                        "error-messages":
+                                                          _vm.error,
+                                                        rules: [
+                                                          _vm.rules.required,
+                                                          _vm.rules.validEmail
+                                                        ],
+                                                        color: "error",
+                                                        label: "Email"
+                                                      },
+                                                      on: {
+                                                        blur: _vm.checkEmail
+                                                      },
+                                                      model: {
+                                                        value:
+                                                          _vm.editedItem.email,
+                                                        callback: function(
+                                                          $$v
+                                                        ) {
+                                                          _vm.$set(
+                                                            _vm.editedItem,
+                                                            "email",
+                                                            $$v
+                                                          )
+                                                        },
+                                                        expression:
+                                                          "editedItem.email"
+                                                      }
+                                                    })
+                                                  ],
+                                                  1
+                                                )
+                                              ],
+                                              1
+                                            )
+                                          : _vm._e(),
+                                        _vm._v(" "),
                                         _c(
                                           "v-row",
                                           [
-                                            _c(
-                                              "v-col",
-                                              {
-                                                attrs: { cols: "12", sm: "12" }
-                                              },
-                                              [
-                                                _c("v-text-field", {
-                                                  attrs: {
-                                                    rules: [
-                                                      _vm.rules.required,
-                                                      _vm.rules.validEmail
-                                                    ],
-                                                    color: "error",
-                                                    label: "Email"
-                                                  },
-                                                  model: {
-                                                    value: _vm.editedItem.email,
-                                                    callback: function($$v) {
-                                                      _vm.$set(
-                                                        _vm.editedItem,
-                                                        "email",
-                                                        $$v
-                                                      )
-                                                    },
-                                                    expression:
-                                                      "editedItem.email"
-                                                  }
-                                                })
-                                              ],
-                                              1
-                                            ),
-                                            _vm._v(" "),
                                             _c(
                                               "v-col",
                                               {
@@ -21578,6 +21733,18 @@ var render = function() {
                                                     items: _vm.roles,
                                                     color: "error",
                                                     label: "Select Role"
+                                                  },
+                                                  model: {
+                                                    value: _vm.editedItem.role,
+                                                    callback: function($$v) {
+                                                      _vm.$set(
+                                                        _vm.editedItem,
+                                                        "role",
+                                                        $$v
+                                                      )
+                                                    },
+                                                    expression:
+                                                      "editedItem.role"
                                                   }
                                                 })
                                               ],
@@ -21644,7 +21811,7 @@ var render = function() {
                   [
                     _c(
                       "v-col",
-                      { attrs: { cols: "2" } },
+                      { attrs: { cols: "12" } },
                       [
                         _c("v-text-field", {
                           staticClass: "mx-4",
@@ -21662,20 +21829,140 @@ var render = function() {
             proxy: true
           },
           {
+            key: "item.role",
+            fn: function(ref) {
+              var item = ref.item
+              return [
+                _c(
+                  "v-edit-dialog",
+                  {
+                    attrs: {
+                      large: "",
+                      block: "",
+                      persistent: "",
+                      "return-value": item.role
+                    },
+                    on: {
+                      "update:returnValue": function($event) {
+                        return _vm.$set(item, "role", $event)
+                      },
+                      "update:return-value": function($event) {
+                        return _vm.$set(item, "role", $event)
+                      },
+                      save: function($event) {
+                        return _vm.updateRole(item)
+                      }
+                    },
+                    scopedSlots: _vm._u(
+                      [
+                        {
+                          key: "input",
+                          fn: function() {
+                            return [
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "12", sm: "12" } },
+                                [
+                                  _c("v-select", {
+                                    attrs: {
+                                      rules: [_vm.rules.required],
+                                      items: _vm.roles,
+                                      color: "error",
+                                      label: "Select Role"
+                                    },
+                                    model: {
+                                      value: item.role,
+                                      callback: function($$v) {
+                                        _vm.$set(item, "role", $$v)
+                                      },
+                                      expression: "item.role"
+                                    }
+                                  })
+                                ],
+                                1
+                              )
+                            ]
+                          },
+                          proxy: true
+                        }
+                      ],
+                      null,
+                      true
+                    )
+                  },
+                  [
+                    _vm._v(
+                      "\n                " +
+                        _vm._s(item.role) +
+                        "\n                    "
+                    )
+                  ]
+                )
+              ]
+            }
+          },
+          {
             key: "item.photo",
             fn: function(ref) {
               var item = ref.item
               return [
-                _c("v-img", {
-                  staticClass: "grey lighten-2",
-                  attrs: {
-                    src: item.photo,
-                    "lazy-src": item.photo,
-                    "aspect-ratio": "1",
-                    "max-width": "100",
-                    "max-height": "100"
-                  }
-                })
+                _c(
+                  "v-edit-dialog",
+                  {
+                    scopedSlots: _vm._u(
+                      [
+                        {
+                          key: "input",
+                          fn: function() {
+                            return [
+                              _c("v-file-input", {
+                                attrs: {
+                                  labe: "Select File",
+                                  accept:
+                                    "image/jpg, image/png, image/bmp, image/jpeg",
+                                  placeholder: "Upload Avatar"
+                                },
+                                on: {
+                                  change: function($event) {
+                                    return _vm.uploadPhoto(item)
+                                  }
+                                },
+                                model: {
+                                  value: _vm.editedItem.photo,
+                                  callback: function($$v) {
+                                    _vm.$set(_vm.editedItem, "photo", $$v)
+                                  },
+                                  expression: "editedItem.photo"
+                                }
+                              })
+                            ]
+                          },
+                          proxy: true
+                        }
+                      ],
+                      null,
+                      true
+                    )
+                  },
+                  [
+                    _c(
+                      "v-list-item-avatar",
+                      [
+                        _c("v-img", {
+                          staticClass: "grey lighten-2",
+                          attrs: {
+                            src: "../storage/" + item.photo,
+                            "aspect-ratio": "1",
+                            "max-width": "50",
+                            "max-height": "50"
+                          }
+                        })
+                      ],
+                      1
+                    )
+                  ],
+                  1
+                )
               ]
             }
           },
@@ -21708,7 +21995,7 @@ var render = function() {
                       }
                     }
                   },
-                  [_vm._v(" mdi-delete  ")]
+                  [_vm._v(" mdi-delete ")]
                 )
               ]
             }
@@ -21741,11 +22028,7 @@ var render = function() {
           }
         },
         [
-          _vm._v(
-            "\n                            " +
-              _vm._s(_vm.text) +
-              "\n                            "
-          ),
+          _vm._v("\n        " + _vm._s(_vm.text) + "\n        "),
           _c(
             "v-btn",
             {
@@ -21756,11 +22039,7 @@ var render = function() {
                 }
               }
             },
-            [
-              _vm._v(
-                "\n                                Close\n                            "
-              )
-            ]
+            [_vm._v("\n            Close\n        ")]
           )
         ],
         1
