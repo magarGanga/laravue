@@ -14,7 +14,7 @@ class AddUserIdColumnUsers extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->bigInteger('role_id')->default(0);
+            $table->bigInteger('role_id')->default(1);
             //
         });
     }

@@ -108,6 +108,7 @@ export default {
                 }).catch(err => {
                     this.text = err.response.data.status
                     this.snackbar = true;
+                     this.text = "Email or Password Invalid";
                 });
 
         }

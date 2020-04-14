@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\User;
 use App\Role;
+use App\Profile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Http\Resources\User as UserResource;
-
+use App\Http\Resources\UserCollection;
+use SebastianBergmann\Environment\Console;
 
 class UserController extends Controller
 {
@@ -22,10 +24,13 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $per_page = $request->per_page;
-
-
-        return response()->json(['users' => UserResource::collection(User::paginate($per_page)), 'roles' => Role::pluck('name')->all()], 200);
+        $per_page = $request->per_page ? $request->per_page : 5;
+        $sortBy = $request->sort_by ? $request->sort_by : 'name';
+        $orderBy = $request->order_by ? 'asc' : 'desc';
+        return response()->json([
+            'users' => new UserCollection(User::orderBy($sortBy, $orderBy)->paginate($per_page)),
+            'roles' => Role::pluck('name')->all()
+        ], 200);
 
         //return user with role data using ::with('role')
        // return response()->json(['users' => UserResource::collection(User::with('role')->paginate($per_page))], 200);
@@ -49,12 +54,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-       $user = User::create([
-           'name' => $request->name,
-           'email' => $request->email,
-
-       ]);
-       return response()->json(['user' => $user], 200);
+        $role = Role::where('name', $request->role)->first();
+        $user = new User([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            ]);
+        $user->role()->associate($role); //associate are used for "belongsTo relationship"
+        // printf(" Associate role",  $user->role()->associate($role))
+        $user->save();
+        $user->profile()->save(new Profile());
+       return response()->json(['user' => new UserResource($user)], 200);
     }
 
     /**
@@ -90,10 +100,15 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $new_role = Role::where('name', $request->role)->first();
         $user = User::find($id);
+
         $user->name = $request->name;
+        $user->role()->dissociate($user->role);
+        $user->role()->associate($new_role);
+
         $user->save();
-        return response()->json(['user' => $user], 200);
+        return response()->json(['user' => new UserResource($user)], 200);
     }
 
     /**
@@ -104,9 +119,9 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-
-      $user = User::find($id)->delete();
-      return response()->json(['user' => $user], 200);
+        $user = User::find($id)->delete();
+        Profile::where('user_id', $id)->delete();
+        return response()->json(['user' => $user], 200);
     }
 
     public function deleteAll(Request $request){
@@ -134,5 +149,39 @@ class UserController extends Controller
     public function verify(Request $request)
     {
         return $request->user()->only('name', 'email');
+    }
+
+    public function changeRole(Request $request)
+    {
+        $user = User::find($request->user);
+        $logedInUser = $request->user();
+        if($user->id === $logedInUser->id){
+            return response()->json(['user' => new UserResource($logedInUser)], 422);
+        }
+
+        $role = Role::where('name', $request->role)->first();
+        $user->role()->associate($role);
+        $user->save();
+        return response()->json(['user' => new UserResource(($user))], 200);
+    }
+
+    public function changePhoto(Request $request)
+    {
+        $user = User::find($request->user);
+        $profile = Profile::where('user_id', $request->user)->first();
+        $ext = $request->photo->extension();
+        $photo = $request->photo->storeAs('images', Str::random(20).".{$ext}", 'public');
+        $profile->photo = $photo;
+        $user->profile()->save($profile);
+        return response()->json(['user' => new UserResource($user)], 200);
+
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|unique:users'
+        ]);
+        return response()->json(['message' => 'Valid Email'], 200);
     }
 }
