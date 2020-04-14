@@ -20933,9 +20933,9 @@ var render = function() {
                         },
                         [
                           _vm._v(
-                            "\n                        " +
+                            "\r\n                        " +
                               _vm._s(_vm.text) +
-                              "\n                        "
+                              "\r\n                        "
                           ),
                           _c(
                             "v-btn",
@@ -20949,7 +20949,7 @@ var render = function() {
                             },
                             [
                               _vm._v(
-                                "\n                            Close\n                        "
+                                "\r\n                            Close\r\n                        "
                               )
                             ]
                           )
@@ -21742,9 +21742,9 @@ var render = function() {
         },
         [
           _vm._v(
-            "\n                            " +
+            "\r\n                            " +
               _vm._s(_vm.text) +
-              "\n                            "
+              "\r\n                            "
           ),
           _c(
             "v-btn",
@@ -21758,7 +21758,7 @@ var render = function() {
             },
             [
               _vm._v(
-                "\n                                Close\n                            "
+                "\r\n                                Close\r\n                            "
               )
             ]
           )
